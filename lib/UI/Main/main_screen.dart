@@ -9,8 +9,8 @@ const Document document = Document(
   title: 'Sample Document',
   handwriting: Handwriting(
     touches: [
-      (position: (x: 10.0, y: 20.0), pressure: 0.5, timestamps: 1000),
-      (position: (x: 30.0, y: 40.0), pressure: 0.7, timestamps: 2000),
+      (position: (x: 10.0, y: 20.0), pressure: 0.5, timestamp: 1000),
+      (position: (x: 30.0, y: 40.0), pressure: 0.7, timestamp: 2000),
     ],
   ),
 );

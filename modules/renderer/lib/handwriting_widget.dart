@@ -23,41 +23,54 @@ final class _HandwritingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF000000)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+    if (touches.length < 2) return;
 
-    if (touches.length >= 2) {
-      final path = Path();
+    final path = Path();
 
-      // Compute the first midpoint
-      Offset p0 = Offset(touches[0].position.x, touches[0].position.y);
-      for (int i = 1; i < touches.length; i++) {
-        Offset p1 = Offset(touches[i].position.x, touches[i].position.y);
-        Offset mid = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
+    // Compute the first midpoint
+    Offset p0 = Offset(touches[0].position.x, touches[0].position.y);
+    for (int i = 1; i < touches.length; i++) {
+      Offset p1 = Offset(touches[i].position.x, touches[i].position.y);
+      Offset mid = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
 
-        if (i == 1) {
-          path.moveTo(p0.dx, p0.dy);
-        }
+      // Calculate average pressure for this segment
+      double avgPressure = (touches[i - 1].pressure + touches[i].pressure) / 2;
 
-        path.quadraticBezierTo(
-          p0.dx,
-          p0.dy, // control point
-          mid.dx,
-          mid.dy, // end point
-        );
+      // Calculate velocity (distance / time) for this segment
+      double dt = (touches[i].timestamp - touches[i - 1].timestamp)
+          .abs()
+          .toDouble();
+      double distance = (p1 - p0).distance;
+      double velocity = dt > 0 ? distance / dt : 1.0;
 
-        p0 = p1;
+      // Adjust stroke width: higher pressure = thicker, higher velocity = thinner
+      // You can tweak these multipliers for your needs
+      double strokeWidth = (avgPressure * 8.0) / (velocity * 0.5 + 1.0);
+      strokeWidth = strokeWidth.clamp(1.0, 12.0);
+
+      final paint = Paint()
+        ..color = const Color(0xFF000000)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth;
+
+      if (i == 1) {
+        path.moveTo(p0.dx, p0.dy);
       }
 
-      // Draw the last segment to the last point
-      path.lineTo(
-        Offset(touches.last.position.x, touches.last.position.y).dx,
-        Offset(touches.last.position.x, touches.last.position.y).dy,
+      path.quadraticBezierTo(
+        p0.dx,
+        p0.dy, // control point
+        mid.dx,
+        mid.dy, // end point
       );
 
       canvas.drawPath(path, paint);
+
+      // Start a new path for the next segment to allow variable stroke width
+      path.reset();
+      path.moveTo(mid.dx, mid.dy);
+
+      p0 = p1;
     }
 
     // Draw circles at the start and end of the path
@@ -65,16 +78,26 @@ final class _HandwritingPainter extends CustomPainter {
       final firstTouch = touches.first;
       final lastTouch = touches.last;
 
+      final startPaint = Paint()
+        ..color = const Color(0xFF000000)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (firstTouch.pressure * 8.0).clamp(1.0, 12.0);
+
+      final endPaint = Paint()
+        ..color = const Color(0xFF000000)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (lastTouch.pressure * 8.0).clamp(1.0, 12.0);
+
       canvas.drawCircle(
         Offset(firstTouch.position.x, firstTouch.position.y),
         firstTouch.pressure * 10,
-        paint,
+        startPaint,
       );
 
       canvas.drawCircle(
         Offset(lastTouch.position.x, lastTouch.position.y),
         lastTouch.pressure * 10,
-        paint,
+        endPaint,
       );
     }
   }
