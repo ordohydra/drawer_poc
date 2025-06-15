@@ -25,6 +25,7 @@ class _HandwritingEditorWidgetState extends State<HandwritingEditorWidget> {
             0.25,
             1.0,
           ), // Use the actual pressure from the event
+          timestamps: event.timeStamp.inMicroseconds,
         );
         setState(() {
           touches.add(touch);

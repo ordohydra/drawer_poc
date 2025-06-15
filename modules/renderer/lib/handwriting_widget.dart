@@ -25,34 +25,41 @@ final class _HandwritingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = const Color(0xFF000000)
-      ..style = PaintingStyle.fill
+      ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
-    // for (final touch in touches) {
-    //   canvas.drawCircle(
-    //     Offset(touch.position.x, touch.position.y),
-    //     touch.pressure * 10,
-    //     paint,
-    //   );
-    // }
+    if (touches.length >= 2) {
+      final path = Path();
 
-    // Draw rounded lines between touches
-    for (int i = 0; i < touches.length - 1; i++) {
-      final touch1 = touches[i];
-      final touch2 = touches[i + 1];
+      // Compute the first midpoint
+      Offset p0 = Offset(touches[0].position.x, touches[0].position.y);
+      for (int i = 1; i < touches.length; i++) {
+        Offset p1 = Offset(touches[i].position.x, touches[i].position.y);
+        Offset mid = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
 
-      final startOffset = Offset(touch1.position.x, touch1.position.y);
-      final endOffset = Offset(touch2.position.x, touch2.position.y);
+        if (i == 1) {
+          path.moveTo(p0.dx, p0.dy);
+        }
 
-      final midPoint = Offset(
-        (startOffset.dx + endOffset.dx) / 2,
-        (startOffset.dy + endOffset.dy) / 2,
+        path.quadraticBezierTo(
+          p0.dx,
+          p0.dy, // control point
+          mid.dx,
+          mid.dy, // end point
+        );
+
+        p0 = p1;
+      }
+
+      // Draw the last segment to the last point
+      path.lineTo(
+        Offset(touches.last.position.x, touches.last.position.y).dx,
+        Offset(touches.last.position.x, touches.last.position.y).dy,
       );
 
-      // Draw a line with rounded ends
-      canvas.drawLine(startOffset, midPoint, paint);
-      canvas.drawLine(midPoint, endOffset, paint);
+      canvas.drawPath(path, paint);
     }
+
     // Draw circles at the start and end of the path
     if (touches.isNotEmpty) {
       final firstTouch = touches.first;
