@@ -15,7 +15,7 @@ final class DocumentWidget extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Text(document.title, textAlign: TextAlign.left),
         ),
-        HandwritingWidget(handwriting: document.handwriting),
+        //HandwritingWidget(handwriting: document.handwriting),
       ],
     );
   }
