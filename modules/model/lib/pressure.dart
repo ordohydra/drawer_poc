@@ -1,3 +1,1 @@
-import 'dart:ffi';
-
-typedef Pressure = Float;
+typedef Pressure = double;

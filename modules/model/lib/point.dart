@@ -1,3 +1,1 @@
-import 'dart:ffi';
-
-typedef Point = ({Float x, Float y});
+typedef Point = ({double x, double y});
