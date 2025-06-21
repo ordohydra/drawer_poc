@@ -11,7 +11,7 @@ final class HandwritingWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: _HandwritingPainter(handwriting.touches),
-      child: Container(width: double.infinity, height: double.infinity),
+      child: const SizedBox(width: double.infinity, height: double.infinity),
     );
   }
 }
@@ -45,8 +45,8 @@ final class _HandwritingPainter extends CustomPainter {
 
       // Adjust stroke width: higher pressure = thicker, higher velocity = thinner
       // You can tweak these multipliers for your needs
-      double strokeWidth = (avgPressure * 8.0) / (velocity * 0.5 + 1.0);
-      strokeWidth = strokeWidth.clamp(1.0, 12.0);
+      double strokeWidth = (avgPressure * 16.0) / (velocity * 160.0 + 1.0);
+      strokeWidth = strokeWidth.clamp(1.0, 24.0);
 
       final paint = Paint()
         ..color = const Color(0xFF000000)
@@ -71,34 +71,6 @@ final class _HandwritingPainter extends CustomPainter {
       path.moveTo(mid.dx, mid.dy);
 
       p0 = p1;
-    }
-
-    // Draw circles at the start and end of the path
-    if (touches.isNotEmpty) {
-      final firstTouch = touches.first;
-      final lastTouch = touches.last;
-
-      final startPaint = Paint()
-        ..color = const Color(0xFF000000)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = (firstTouch.pressure * 8.0).clamp(1.0, 12.0);
-
-      final endPaint = Paint()
-        ..color = const Color(0xFF000000)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = (lastTouch.pressure * 8.0).clamp(1.0, 12.0);
-
-      canvas.drawCircle(
-        Offset(firstTouch.position.x, firstTouch.position.y),
-        firstTouch.pressure * 10,
-        startPaint,
-      );
-
-      canvas.drawCircle(
-        Offset(lastTouch.position.x, lastTouch.position.y),
-        lastTouch.pressure * 10,
-        endPaint,
-      );
     }
   }
 
