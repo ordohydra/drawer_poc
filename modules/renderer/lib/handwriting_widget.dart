@@ -39,23 +39,18 @@ final class _HandwritingPainter extends CustomPainter {
       Offset mid1 = Offset((p0.dx + p1.dx) / 2, (p0.dy + p1.dy) / 2);
       Offset mid2 = Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
 
-      //double avgPressure = (touches[i - 1].pressure + touches[i].pressure) / 2;
       double dt = (touches[i].timestamp - touches[i - 2].timestamp)
           .abs()
           .toDouble();
       double distance = (p2 - p0).distance;
       double velocity = dt > 0 ? distance / dt : 1.0;
-      // double strokeWidth = (avgPressure * 16.0) / (velocity * 160.0 + 1.0);
-      // strokeWidth = strokeWidth.clamp(1.0, 24.0);
 
-      // Sample points along the quadratic Bézier
       const int steps = 16;
       List<Offset> leftEdge = [];
       List<Offset> rightEdge = [];
 
       for (int s = 0; s <= steps; s++) {
         double t = s / steps;
-        // Quadratic Bézier formula
         double x =
             (1 - t) * (1 - t) * mid1.dx +
             2 * (1 - t) * t * mid1.dx +
@@ -65,14 +60,12 @@ final class _HandwritingPainter extends CustomPainter {
             2 * (1 - t) * t * mid1.dy +
             t * t * mid2.dy;
 
-        // Interpolate width along the segment
         double width = lerpDouble(
           (touches[i - 1].pressure * 32.0) / (velocity * 0.1 + 1.0),
           (touches[i].pressure * 32.0) / (velocity * 0.1 + 1.0),
           t,
         )!.clamp(2.0, 24.0);
 
-        // Compute direction (tangent)
         double dx =
             2 * (1 - t) * (mid2.dx - mid1.dx) + 2 * t * (mid2.dx - mid1.dx);
         double dy =
@@ -92,7 +85,6 @@ final class _HandwritingPainter extends CustomPainter {
       List<int> indices = [];
       int n = leftEdge.length;
       for (int j = 0; j < n - 1; j++) {
-        // Two triangles per quad
         indices.add(j);
         indices.add(j + 1);
         indices.add(2 * n - j - 2);
@@ -113,6 +105,17 @@ final class _HandwritingPainter extends CustomPainter {
       );
 
       canvas.drawVertices(ribbonVertices, BlendMode.srcOver, paint);
+
+      // Draw circles at mid1 and mid2 to smooth connections
+      final double radius1 = (touches[i - 1].pressure * 16.0) / (velocity * 0.1 + 1.0);
+      final double radius2 = (touches[i].pressure * 16.0) / (velocity * 0.1 + 1.0);
+
+      final Paint circlePaint = Paint()
+        ..shader = shader
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(mid1, radius1.clamp(2.0, 16.0), circlePaint);
+      canvas.drawCircle(mid2, radius2.clamp(2.0, 16.0), circlePaint);
     }
   }
 
