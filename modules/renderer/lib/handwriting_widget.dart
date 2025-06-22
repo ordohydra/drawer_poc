@@ -44,12 +44,17 @@ final class _HandwritingPainter extends CustomPainter {
       double velocity = dt > 0 ? distance / dt : 1.0;
 
       // Adjust stroke width: higher pressure = thicker, higher velocity = thinner
-      // You can tweak these multipliers for your needs
       double strokeWidth = (avgPressure * 16.0) / (velocity * 160.0 + 1.0);
       strokeWidth = strokeWidth.clamp(1.0, 24.0);
 
+      final shader = LinearGradient(
+        colors: [const Color(0xFF000000), const Color(0xFF4444FF)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
       final paint = Paint()
-        ..color = const Color(0xFF000000)
+        ..shader = shader
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth;
 
